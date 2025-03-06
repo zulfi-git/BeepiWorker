@@ -21,7 +21,10 @@ jobs:
       - name: Install dependencies
         run: npm install
         
+      - name: Debug - List files
+        run: ls -la
+        
       - name: Deploy Worker
         run: npx wrangler deploy
         env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.NeseUKpBAZTaaWQgsxwb4zHnLGxh2uKj0OskYhNB }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
