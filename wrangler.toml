@@ -1,3 +1,6 @@
 name = "beepi"
 main = "src/beepi-worker.js"
 compatibility_date = "2023-11-15"
+
+[build]
+external = ["jose"]
