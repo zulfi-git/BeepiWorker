@@ -1,2 +1,3 @@
 name = "beepiworker"
 main = "beepi-worker.js"
+compatibility_date = "2023-11-15"
