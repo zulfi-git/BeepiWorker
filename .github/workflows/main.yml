@@ -9,9 +9,13 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    name: Deploy Worker
     steps:
       - uses: actions/checkout@v3
+      
+      - name: Debug list files
+        run: |
+          ls -la
+          cat wrangler.toml
       
       - name: Setup Node.js
         uses: actions/setup-node@v3
@@ -21,10 +25,14 @@ jobs:
       - name: Install dependencies
         run: npm install
         
-      - name: Debug - List files
-        run: ls -la
+      - name: Create simple worker file for testing
+        run: |
+          echo 'export default { fetch() { return new Response("Hello World") } }' > index.js
+          echo 'name = "beepiworker"' > wrangler-test.toml
+          echo 'main = "index.js"' >> wrangler-test.toml
+          echo 'compatibility_date = "2023-11-15"' >> wrangler-test.toml
         
-      - name: Deploy Worker
-        run: npx wrangler deploy "${GITHUB_WORKSPACE}/beepi-worker.js"
+      - name: Deploy test worker
+        run: npx wrangler deploy --config wrangler-test.toml
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

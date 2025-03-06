@@ -1,0 +1,12 @@
+{
+    "name": "beepiworker",
+    "version": "1.0.0",
+    "private": true,
+    "main": "beepi-worker.js",
+    "scripts": {
+      "deploy": "wrangler deploy"
+    },
+    "devDependencies": {
+      "wrangler": "^3.0.0"
+    }
+  }
