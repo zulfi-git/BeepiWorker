@@ -38,4 +38,4 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           
       - name: Deploy Worker
-        run: npx wrangler deploy "${GITHUB_WORKSPACE}/src/beepi-worker.js"
+        run: npx wrangler deploy "src/beepi-worker.js"
