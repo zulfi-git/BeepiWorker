@@ -1,6 +1,11 @@
-name = "beepi"
+name = "beepiworker"
 main = "src/beepi-worker.js"
-compatibility_date = "2023-11-15"
+compatibility_date = "2024-03-07"
 
 [build]
 external = ["jose"]
+command = "npm run build"
+
+[build.upload]
+format = "modules"
+main = "src/beepi-worker.js"

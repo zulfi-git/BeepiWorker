@@ -21,25 +21,9 @@ jobs:
           cache: 'npm'
           
       - name: Install dependencies
-        run: npm ci
-        
-      - name: Update wrangler.toml
         run: |
-          if [ -f wrangler.toml ]; then
-            sed -i 's/index.ts/index.js/g' wrangler.toml
-          fi
+          npm ci
+          npm install jose
         
-      - name: Create test worker
-        run: |
-          echo 'export default { fetch() { return new Response("Hello World") } }' > index.js
-          cat > wrangler-test.toml << EOF
-          name = "beepiworker"
-          main = "index.js"
-          compatibility_date = "2023-11-15"
-          EOF
-        
-      - name: Deploy test worker
-        run: npx wrangler deploy --config wrangler-test.toml
-          
-      - name: Deploy main worker
-        run: npx wrangler deploy
+      - name: Deploy Worker
+        run: npx wrangler@3.114.0 deploy

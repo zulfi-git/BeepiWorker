@@ -4,9 +4,13 @@
     "private": true,
     "main": "beepi-worker.js",
     "scripts": {
-      "deploy": "wrangler deploy"
+      "deploy": "wrangler deploy",
+      "build": "esbuild src/beepi-worker.js --bundle --format=esm --outfile=dist/worker.js"
     },
     "devDependencies": {
       "wrangler": "^3.0.0"
+    },
+    "dependencies": {
+      "jose": "^5.2.2"
     }
   }
