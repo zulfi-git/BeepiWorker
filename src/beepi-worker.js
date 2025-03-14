@@ -51,6 +51,7 @@ async function generateJWT(env) {
     throw new Error('PRIVATE_KEY environment variable is missing');
   }
 
+  let privateKey;
   try {
     // Extract the base64 part between BEGIN and END markers
     const pemContents = env.PRIVATE_KEY
@@ -64,7 +65,7 @@ async function generateJWT(env) {
       bytes[i] = binaryStr.charCodeAt(i);
     }
 
-    const privateKey = await crypto.subtle.importKey(
+    privateKey = await crypto.subtle.importKey(
       'pkcs8',
       bytes,
       {
