@@ -14,16 +14,16 @@ export default {
     try {
       // Get registration number from request
       const { registrationNumber } = await request.json();
-      
+
       // Generate JWT
       const jwt = await generateJWT(env);
-      
+
       // Exchange JWT for access token
       const accessToken = await getAccessToken(jwt, env);
-      
+
       // Call Vegvesen API
       const vehicleData = await getVehicleData(accessToken, registrationNumber, env);
-      
+
       // Return data to WordPress
       return new Response(JSON.stringify(vehicleData), {
         headers: {
@@ -45,30 +45,35 @@ export default {
 
 async function generateJWT(env) {
   const now = Math.floor(Date.now() / 1000);
-  
-  // Parse the private key into proper format
-  // Convert base64 to binary using atob
-  // Clean the base64 string by removing whitespace and ensuring proper padding
-  const cleanBase64 = env.PRIVATE_KEY.trim().replace(/\s/g, '');
-  const paddedBase64 = cleanBase64.padEnd(Math.ceil(cleanBase64.length / 4) * 4, '=');
-  
+
+  // Parse the private key from PEM format
+  if (!env.PRIVATE_KEY) {
+    throw new Error('PRIVATE_KEY environment variable is missing');
+  }
+
   try {
-    const binaryStr = atob(paddedBase64);
+    // Extract the base64 part between BEGIN and END markers
+    const pemContents = env.PRIVATE_KEY
+      .replace('-----BEGIN PRIVATE KEY-----', '')
+      .replace('-----END PRIVATE KEY-----', '')
+      .replace(/\s/g, '');
+
+    const binaryStr = atob(pemContents);
     const bytes = new Uint8Array(binaryStr.length);
     for (let i = 0; i < binaryStr.length; i++) {
       bytes[i] = binaryStr.charCodeAt(i);
     }
-  
-  const privateKey = await crypto.subtle.importKey(
-    'pkcs8',
-    bytes,
-    {
-      name: 'RSASSA-PKCS1-v1_5',
-      hash: 'SHA-256',
-    },
-    false,
-    ['sign']
-  );
+
+    const privateKey = await crypto.subtle.importKey(
+      'pkcs8',
+      bytes,
+      {
+        name: 'RSASSA-PKCS1-v1_5',
+        hash: 'SHA-256',
+      },
+      false,
+      ['sign']
+    );
   } catch (error) {
     throw new Error(`Invalid private key format: ${error.message}`);
   }
@@ -87,7 +92,7 @@ async function generateJWT(env) {
     x5c: [env.BUSINESS_CERT]
   })
   .sign(privateKey);
-  
+
   return jwt;
 }
 
@@ -99,12 +104,12 @@ async function getAccessToken(jwt, env) {
     },
     body: `grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=${jwt}`
   });
-  
+
   if (!response.ok) {
     const error = await response.text();
     throw new Error(`Token exchange failed: ${error}`);
   }
-  
+
   const data = await response.json();
   return data.access_token;
 }
@@ -120,12 +125,12 @@ async function getVehicleData(token, registrationNumber, env) {
       { kjennemerke: registrationNumber }
     ])
   });
-  
+
   if (!response.ok) {
     const error = await response.text();
     throw new Error(`Vehicle lookup failed: ${error}`);
   }
-  
+
   return response.json();
 }
 
