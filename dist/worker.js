@@ -974,6 +974,7 @@ async function generateJWT(env) {
   if (!env.PRIVATE_KEY) {
     throw new Error("PRIVATE_KEY environment variable is missing");
   }
+  let privateKey;
   try {
     const pemContents = env.PRIVATE_KEY.replace("-----BEGIN PRIVATE KEY-----", "").replace("-----END PRIVATE KEY-----", "").replace(/\s/g, "");
     const binaryStr = atob(pemContents);
@@ -981,7 +982,7 @@ async function generateJWT(env) {
     for (let i = 0; i < binaryStr.length; i++) {
       bytes[i] = binaryStr.charCodeAt(i);
     }
-    const privateKey2 = await crypto.subtle.importKey(
+    privateKey = await crypto.subtle.importKey(
       "pkcs8",
       bytes,
       {
