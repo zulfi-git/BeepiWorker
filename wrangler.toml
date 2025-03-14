@@ -1,4 +1,4 @@
-name = "beepiworker"
+name = "beepi"
 main = "src/beepi-worker.js"
 compatibility_date = "2024-03-07"
 
