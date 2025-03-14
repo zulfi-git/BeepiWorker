@@ -6,4 +6,4 @@ compatibility_date = "2024-03-07"
 command = "npm run build"
 
 [observability.logs]
-enabled = false
+enabled = true
