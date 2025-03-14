@@ -1,7 +1,7 @@
 var __defProp = Object.defineProperty;
 var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
 
-// .wrangler/tmp/bundle-GQlqvB/checked-fetch.js
+// .wrangler/tmp/bundle-ttPkzm/checked-fetch.js
 var urls = /* @__PURE__ */ new Set();
 function checkURL(request, init) {
   const url = request instanceof URL ? request : new URL(
@@ -1078,23 +1078,28 @@ var beepi_worker_default = {
 };
 async function generateJWT(env) {
   const now = Math.floor(Date.now() / 1e3);
+  const privateKey = await crypto.subtle.importKey(
+    "pkcs8",
+    Buffer.from(env.PRIVATE_KEY, "base64"),
+    {
+      name: "RSASSA-PKCS1-v1_5",
+      hash: "SHA-256"
+    },
+    false,
+    ["sign"]
+  );
   const jwt = await new SignJWT({
     aud: env.AUD,
-    // https://test.maskinporten.no/
     scope: env.SCOPE,
-    // svv:kjoretoy/kjoretoyopplysninger
     resource: env.RESOURCE,
-    // https://www.utv.vegvesen.no
     iss: env.CLIENT_ID,
-    // 2d5adb28-0e61-46aa-9fc0-8772b5206c7c
     exp: now + 60,
-    // 1 minute from now
     iat: now,
     jti: "jwt-" + crypto.randomUUID()
   }).setProtectedHeader({
     alg: "RS256",
     x5c: [env.BUSINESS_CERT]
-  }).sign(env.PRIVATE_KEY);
+  }).sign(privateKey);
   return jwt;
 }
 __name(generateJWT, "generateJWT");
@@ -1185,7 +1190,7 @@ var jsonError = /* @__PURE__ */ __name(async (request, env, _ctx, middlewareCtx)
 }, "jsonError");
 var middleware_miniflare3_json_error_default = jsonError;
 
-// .wrangler/tmp/bundle-GQlqvB/middleware-insertion-facade.js
+// .wrangler/tmp/bundle-ttPkzm/middleware-insertion-facade.js
 var __INTERNAL_WRANGLER_MIDDLEWARE__ = [
   middleware_ensure_req_body_drained_default,
   middleware_miniflare3_json_error_default
@@ -1217,7 +1222,7 @@ function __facade_invoke__(request, env, ctx, dispatch, finalMiddleware) {
 }
 __name(__facade_invoke__, "__facade_invoke__");
 
-// .wrangler/tmp/bundle-GQlqvB/middleware-loader.entry.ts
+// .wrangler/tmp/bundle-ttPkzm/middleware-loader.entry.ts
 var __Facade_ScheduledController__ = class ___Facade_ScheduledController__ {
   constructor(scheduledTime, cron, noRetry) {
     this.scheduledTime = scheduledTime;

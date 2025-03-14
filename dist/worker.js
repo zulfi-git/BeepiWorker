@@ -971,23 +971,28 @@ var beepi_worker_default = {
 };
 async function generateJWT(env) {
   const now = Math.floor(Date.now() / 1e3);
+  const privateKey = await crypto.subtle.importKey(
+    "pkcs8",
+    Buffer.from(env.PRIVATE_KEY, "base64"),
+    {
+      name: "RSASSA-PKCS1-v1_5",
+      hash: "SHA-256"
+    },
+    false,
+    ["sign"]
+  );
   const jwt = await new SignJWT({
     aud: env.AUD,
-    // https://test.maskinporten.no/
     scope: env.SCOPE,
-    // svv:kjoretoy/kjoretoyopplysninger
     resource: env.RESOURCE,
-    // https://www.utv.vegvesen.no
     iss: env.CLIENT_ID,
-    // 2d5adb28-0e61-46aa-9fc0-8772b5206c7c
     exp: now + 60,
-    // 1 minute from now
     iat: now,
     jti: "jwt-" + crypto.randomUUID()
   }).setProtectedHeader({
     alg: "RS256",
     x5c: [env.BUSINESS_CERT]
-  }).sign(env.PRIVATE_KEY);
+  }).sign(privateKey);
   return jwt;
 }
 async function getAccessToken(jwt, env) {
