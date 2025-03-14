@@ -48,11 +48,16 @@ async function generateJWT(env) {
   
   // Parse the private key into proper format
   // Convert base64 to binary using atob
-  const binaryStr = atob(env.PRIVATE_KEY);
-  const bytes = new Uint8Array(binaryStr.length);
-  for (let i = 0; i < binaryStr.length; i++) {
-    bytes[i] = binaryStr.charCodeAt(i);
-  }
+  // Clean the base64 string by removing whitespace and ensuring proper padding
+  const cleanBase64 = env.PRIVATE_KEY.trim().replace(/\s/g, '');
+  const paddedBase64 = cleanBase64.padEnd(Math.ceil(cleanBase64.length / 4) * 4, '=');
+  
+  try {
+    const binaryStr = atob(paddedBase64);
+    const bytes = new Uint8Array(binaryStr.length);
+    for (let i = 0; i < binaryStr.length; i++) {
+      bytes[i] = binaryStr.charCodeAt(i);
+    }
   
   const privateKey = await crypto.subtle.importKey(
     'pkcs8',
@@ -64,6 +69,9 @@ async function generateJWT(env) {
     false,
     ['sign']
   );
+  } catch (error) {
+    throw new Error(`Invalid private key format: ${error.message}`);
+  }
 
   const jwt = await new SignJWT({
     aud: env.AUD,
