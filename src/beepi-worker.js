@@ -1,6 +1,5 @@
 // Import libraries for JWT generation
 import { SignJWT } from 'jose';
-import { importPKCS8 } from 'jose';
 
 // Store your business certificate and private key as Worker Secrets
 // Access them with: env.BUSINESS_CERT and env.PRIVATE_KEY
@@ -13,9 +12,6 @@ export default {
     }
 
     try {
-      // Log all environment variables for debugging
-      console.log('Environment Variables:', Object.keys(env));
-
       // Get registration number from request
       const { registrationNumber } = await request.json();
       
@@ -36,21 +32,11 @@ export default {
         }
       });
     } catch (error) {
-      // Enhanced error logging
-      console.error('Unhandled Worker Error:', {
-        message: error.message,
-        stack: error.stack,
-        name: error.name
-      });
-
-      return new Response(JSON.stringify({
-        error: 'Internal Server Error',
-        details: error.message
-      }), {
+      return new Response(JSON.stringify({ error: error.message }), {
         status: 500,
         headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': 'https://beepi.no'
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "https://beepi.no"
         }
       });
     }
@@ -58,50 +44,25 @@ export default {
 };
 
 async function generateJWT(env) {
-  console.log('Generating JWT', {
-    clientId: env.CLIENT_ID,
-    scope: env.SCOPE,
-    aud: env.AUD
-  });
-
-  try {
-    const now = Math.floor(Date.now() / 1000);
-    const exp = now + 120; // 2 minute expiration
-
-    // Create JWT header
-    const header = {
-      alg: 'RS256',
-      kid: env.KID  // Add KID to header
-    };
-
-    // Create JWT payload
-    const payload = {
-      scope: env.SCOPE,
-      iss: env.CLIENT_ID,
-      aud: env.AUD,
-      exp: exp,
-      iat: now,
-      jti: 'jwt-' + crypto.randomUUID()
-    };
-
-    // Add resource if it exists
-    if (env.RESOURCE) {
-      payload.resource = env.RESOURCE;
-    }
-
-    // Import the private key
-    const privateKey = await importPKCS8(env.PRIVATE_KEY, 'RS256');
-
-    // Create and sign the JWT manually to match Postman's approach
-    const jwt = await new SignJWT(payload)
-      .setProtectedHeader(header)
-      .sign(privateKey);
-
-    return jwt;
-  } catch (error) {
-    console.error('JWT Generation Error:', error);
-    throw error;
-  }
+  const now = Math.floor(Date.now() / 1000);
+  
+  // Create the JWT using exact variables from screenshot
+  const jwt = await new SignJWT({
+    aud: env.AUD,  // https://test.maskinporten.no/
+    scope: env.SCOPE,  // svv:kjoretoy/kjoretoyopplysninger
+    resource: env.RESOURCE,  // https://www.utv.vegvesen.no
+    iss: env.CLIENT_ID,  // 2d5adb28-0e61-46aa-9fc0-8772b5206c7c
+    exp: now + 60, // 1 minute from now
+    iat: now,
+    jti: "jwt-" + crypto.randomUUID()
+  })
+  .setProtectedHeader({ 
+    alg: "RS256",
+    x5c: [env.BUSINESS_CERT]
+  })
+  .sign(env.PRIVATE_KEY);
+  
+  return jwt;
 }
 
 async function getAccessToken(jwt, env) {
