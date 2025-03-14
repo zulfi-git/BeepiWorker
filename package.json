@@ -1,16 +1,16 @@
 {
-  "name": "beepiworker",
-  "version": "1.0.0",
-  "private": true,
-  "main": "beepi-worker.js",
-  "scripts": {
-    "deploy": "wrangler deploy",
-    "build": "esbuild src/beepi-worker.js --bundle --format=esm --outfile=dist/worker.js"
-  },
-  "devDependencies": {
-    "wrangler": "^4.0.0"
-  },
-  "dependencies": {
-    "jose": "^5.2.2"
+    "name": "beepiworker",
+    "version": "1.0.0",
+    "private": true,
+    "main": "beepi-worker.js",
+    "scripts": {
+      "deploy": "wrangler deploy",
+      "build": "esbuild src/beepi-worker.js --bundle --format=esm --outfile=dist/worker.js"
+    },
+    "devDependencies": {
+      "wrangler": "^4.0.0"
+    },
+    "dependencies": {
+      "jose": "^5.2.2"
+    }
   }
-}
