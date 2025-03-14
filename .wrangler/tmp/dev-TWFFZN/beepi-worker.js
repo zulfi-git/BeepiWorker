@@ -1,7 +1,7 @@
 var __defProp = Object.defineProperty;
 var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
 
-// .wrangler/tmp/bundle-sF51qT/checked-fetch.js
+// .wrangler/tmp/bundle-m4hAZr/checked-fetch.js
 var urls = /* @__PURE__ */ new Set();
 function checkURL(request, init) {
   const url = request instanceof URL ? request : new URL(
@@ -1078,21 +1078,27 @@ var beepi_worker_default = {
 };
 async function generateJWT(env) {
   const now = Math.floor(Date.now() / 1e3);
-  const binaryStr = atob(env.PRIVATE_KEY);
-  const bytes = new Uint8Array(binaryStr.length);
-  for (let i = 0; i < binaryStr.length; i++) {
-    bytes[i] = binaryStr.charCodeAt(i);
+  const cleanBase64 = env.PRIVATE_KEY.trim().replace(/\s/g, "");
+  const paddedBase64 = cleanBase64.padEnd(Math.ceil(cleanBase64.length / 4) * 4, "=");
+  try {
+    const binaryStr = atob(paddedBase64);
+    const bytes = new Uint8Array(binaryStr.length);
+    for (let i = 0; i < binaryStr.length; i++) {
+      bytes[i] = binaryStr.charCodeAt(i);
+    }
+    const privateKey2 = await crypto.subtle.importKey(
+      "pkcs8",
+      bytes,
+      {
+        name: "RSASSA-PKCS1-v1_5",
+        hash: "SHA-256"
+      },
+      false,
+      ["sign"]
+    );
+  } catch (error) {
+    throw new Error(`Invalid private key format: ${error.message}`);
   }
-  const privateKey = await crypto.subtle.importKey(
-    "pkcs8",
-    bytes,
-    {
-      name: "RSASSA-PKCS1-v1_5",
-      hash: "SHA-256"
-    },
-    false,
-    ["sign"]
-  );
   const jwt = await new SignJWT({
     aud: env.AUD,
     scope: env.SCOPE,
@@ -1195,7 +1201,7 @@ var jsonError = /* @__PURE__ */ __name(async (request, env, _ctx, middlewareCtx)
 }, "jsonError");
 var middleware_miniflare3_json_error_default = jsonError;
 
-// .wrangler/tmp/bundle-sF51qT/middleware-insertion-facade.js
+// .wrangler/tmp/bundle-m4hAZr/middleware-insertion-facade.js
 var __INTERNAL_WRANGLER_MIDDLEWARE__ = [
   middleware_ensure_req_body_drained_default,
   middleware_miniflare3_json_error_default
@@ -1227,7 +1233,7 @@ function __facade_invoke__(request, env, ctx, dispatch, finalMiddleware) {
 }
 __name(__facade_invoke__, "__facade_invoke__");
 
-// .wrangler/tmp/bundle-sF51qT/middleware-loader.entry.ts
+// .wrangler/tmp/bundle-m4hAZr/middleware-loader.entry.ts
 var __Facade_ScheduledController__ = class ___Facade_ScheduledController__ {
   constructor(scheduledTime, cron, noRetry) {
     this.scheduledTime = scheduledTime;

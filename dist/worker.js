@@ -971,21 +971,27 @@ var beepi_worker_default = {
 };
 async function generateJWT(env) {
   const now = Math.floor(Date.now() / 1e3);
-  const binaryStr = atob(env.PRIVATE_KEY);
-  const bytes = new Uint8Array(binaryStr.length);
-  for (let i = 0; i < binaryStr.length; i++) {
-    bytes[i] = binaryStr.charCodeAt(i);
+  const cleanBase64 = env.PRIVATE_KEY.trim().replace(/\s/g, "");
+  const paddedBase64 = cleanBase64.padEnd(Math.ceil(cleanBase64.length / 4) * 4, "=");
+  try {
+    const binaryStr = atob(paddedBase64);
+    const bytes = new Uint8Array(binaryStr.length);
+    for (let i = 0; i < binaryStr.length; i++) {
+      bytes[i] = binaryStr.charCodeAt(i);
+    }
+    const privateKey2 = await crypto.subtle.importKey(
+      "pkcs8",
+      bytes,
+      {
+        name: "RSASSA-PKCS1-v1_5",
+        hash: "SHA-256"
+      },
+      false,
+      ["sign"]
+    );
+  } catch (error) {
+    throw new Error(`Invalid private key format: ${error.message}`);
   }
-  const privateKey = await crypto.subtle.importKey(
-    "pkcs8",
-    bytes,
-    {
-      name: "RSASSA-PKCS1-v1_5",
-      hash: "SHA-256"
-    },
-    false,
-    ["sign"]
-  );
   const jwt = await new SignJWT({
     aud: env.AUD,
     scope: env.SCOPE,
