@@ -16,14 +16,13 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '18'
-          cache: 'npm'
           
       - name: Install dependencies
         run: |
-          npm ci
-          npm install esbuild  # Ensure esbuild is installed
+          npm install
+          npm install -g wrangler  # Install wrangler globally
         
       - name: Deploy Worker
-        run: npx wrangler@4.0.0 deploy
+        run: wrangler deploy  # Simplified deployment command
         env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}  # Move env here
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

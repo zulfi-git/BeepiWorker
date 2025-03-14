@@ -13,6 +13,9 @@ export default {
     }
 
     try {
+      // Log all environment variables for debugging
+      console.log('Environment Variables:', Object.keys(env));
+
       // Get registration number from request
       const { registrationNumber } = await request.json();
       
@@ -33,11 +36,21 @@ export default {
         }
       });
     } catch (error) {
-      return new Response(JSON.stringify({ error: error.message }), {
+      // Enhanced error logging
+      console.error('Unhandled Worker Error:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
+
+      return new Response(JSON.stringify({
+        error: 'Internal Server Error',
+        details: error.message
+      }), {
         status: 500,
         headers: {
-          "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "https://beepi.no"
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': 'https://beepi.no'
         }
       });
     }
