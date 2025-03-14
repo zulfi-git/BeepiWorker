@@ -2,6 +2,7 @@
     "name": "beepiworker",
     "version": "1.0.0",
     "private": true,
+    "type": "module",
     "main": "beepi-worker.js",
     "scripts": {
         "deploy": "wrangler deploy",
