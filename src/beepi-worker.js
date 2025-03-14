@@ -46,15 +46,12 @@ export default {
 async function generateJWT(env) {
   const now = Math.floor(Date.now() / 1000);
   
-  // Create the private key from the environment variable
-  const privateKey = env.PRIVATE_KEY;
-  
-  // Create the JWT
+  // Create the JWT using exact variables from screenshot
   const jwt = await new SignJWT({
-    aud: "https://maskinporten.no/",
-    scope: "svv:kjoretoy/kjoretoyopplysninger",
-    resource: "https://www.vegvesen.no",
-    iss: env.CLIENT_ID,
+    aud: env.AUD,  // https://test.maskinporten.no/
+    scope: env.SCOPE,  // svv:kjoretoy/kjoretoyopplysninger
+    resource: env.RESOURCE,  // https://www.utv.vegvesen.no
+    iss: env.CLIENT_ID,  // 2d5adb28-0e61-46aa-9fc0-8772b5206c7c
     exp: now + 60, // 1 minute from now
     iat: now,
     jti: "jwt-" + crypto.randomUUID()
@@ -63,13 +60,13 @@ async function generateJWT(env) {
     alg: "RS256",
     x5c: [env.BUSINESS_CERT]
   })
-  .sign(privateKey);
+  .sign(env.PRIVATE_KEY);
   
   return jwt;
 }
 
 async function getAccessToken(jwt, env) {
-  const response = await fetch("https://maskinporten.no/token", {
+  const response = await fetch(env.TOKEN_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/x-www-form-urlencoded"
@@ -87,7 +84,7 @@ async function getAccessToken(jwt, env) {
 }
 
 async function getVehicleData(token, registrationNumber, env) {
-  const response = await fetch("https://akfell-datautlevering.atlas.vegvesen.no/kjoretoyoppslag/bulk/kjennemerke", {
+  const response = await fetch(env.LOOKUP_URL + "/kjoretoyoppslag/bulk/kjennemerke", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
