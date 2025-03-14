@@ -26,4 +26,4 @@ jobs:
           npm install jose
         
       - name: Deploy Worker
-        run: npx wrangler@3.114.0 deploy
+        run: npx wrangler@4.0.0 deploy
