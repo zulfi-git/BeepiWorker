@@ -4,6 +4,10 @@ compatibility_date = "2024-03-07"
 
 [build]
 command = "npm run build"
+upload.format = "service-worker"
 
-[observability.logs]
-enabled = false
+[worker]
+format = "esm"
+
+[observability]
+logs = false
