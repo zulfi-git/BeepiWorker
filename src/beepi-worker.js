@@ -47,9 +47,16 @@ async function generateJWT(env) {
   const now = Math.floor(Date.now() / 1000);
   
   // Parse the private key into proper format
+  // Convert base64 to binary using atob
+  const binaryStr = atob(env.PRIVATE_KEY);
+  const bytes = new Uint8Array(binaryStr.length);
+  for (let i = 0; i < binaryStr.length; i++) {
+    bytes[i] = binaryStr.charCodeAt(i);
+  }
+  
   const privateKey = await crypto.subtle.importKey(
     'pkcs8',
-    Buffer.from(env.PRIVATE_KEY, 'base64'),
+    bytes,
     {
       name: 'RSASSA-PKCS1-v1_5',
       hash: 'SHA-256',
