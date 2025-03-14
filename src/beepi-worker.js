@@ -45,39 +45,50 @@ export default {
 };
 
 async function generateJWT(env) {
-  const now = Math.floor(Date.now() / 1000);
-  const exp = now + 120; // 2 minute expiration
-
-  // Create JWT header
-  const header = {
-    alg: 'RS256',
-    kid: env.KID  // Add KID to header
-  };
-
-  // Create JWT payload
-  const payload = {
+  console.log('Generating JWT', {
+    clientId: env.CLIENT_ID,
     scope: env.SCOPE,
-    iss: env.CLIENT_ID,
-    aud: env.AUD,
-    exp: exp,
-    iat: now,
-    jti: 'jwt-' + crypto.randomUUID()
-  };
+    aud: env.AUD
+  });
 
-  // Add resource if it exists
-  if (env.RESOURCE) {
-    payload.resource = env.RESOURCE;
+  try {
+    const now = Math.floor(Date.now() / 1000);
+    const exp = now + 120; // 2 minute expiration
+
+    // Create JWT header
+    const header = {
+      alg: 'RS256',
+      kid: env.KID  // Add KID to header
+    };
+
+    // Create JWT payload
+    const payload = {
+      scope: env.SCOPE,
+      iss: env.CLIENT_ID,
+      aud: env.AUD,
+      exp: exp,
+      iat: now,
+      jti: 'jwt-' + crypto.randomUUID()
+    };
+
+    // Add resource if it exists
+    if (env.RESOURCE) {
+      payload.resource = env.RESOURCE;
+    }
+
+    // Import the private key
+    const privateKey = await importPKCS8(env.PRIVATE_KEY, 'RS256');
+
+    // Create and sign the JWT manually to match Postman's approach
+    const jwt = await new SignJWT(payload)
+      .setProtectedHeader(header)
+      .sign(privateKey);
+
+    return jwt;
+  } catch (error) {
+    console.error('JWT Generation Error:', error);
+    throw error;
   }
-
-  // Import the private key
-  const privateKey = await importPKCS8(env.PRIVATE_KEY, 'RS256');
-
-  // Create and sign the JWT manually to match Postman's approach
-  const jwt = await new SignJWT(payload)
-    .setProtectedHeader(header)
-    .sign(privateKey);
-
-  return jwt;
 }
 
 async function getAccessToken(jwt, env) {
