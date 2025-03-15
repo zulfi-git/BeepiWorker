@@ -1,3 +1,4 @@
+
 name = "beepi"
 main = "src/beepi-worker.js"
 compatibility_date = "2024-03-07"
@@ -7,3 +8,16 @@ command = "npm run build"
 
 [observability.logs]
 enabled = true
+
+[vars]
+AUD = "https://vegnett.vegvesen.no"
+SCOPE = "kjoretoy:lr-les"
+RESOURCE = "https://vegnett.vegvesen.no/kjoretoy/lr"
+LOOKUP_URL = "https://vegnett.vegvesen.no"
+TOKEN_URL = "https://test.maskinporten.no/token"
+
+[secrets]
+# These will be encrypted and stored securely:
+# CLIENT_ID
+# PRIVATE_KEY  
+# BUSINESS_CERT
