@@ -999,14 +999,15 @@ async function generateJWT(env) {
     aud: "https://test.maskinporten.no/",
     scope: "svv:kjoretoy/kjoretoyopplysninger",
     resource: "https://www.utv.vegvesen.no",
-    iss: "0192:998453240",
-    exp: now + 60,
+    consumer_org: "998453240",
+    iss: env.CLIENT_ID,
+    exp: now + 120,
     iat: now,
-    jti: "jwt-" + crypto.randomUUID()
+    jti: crypto.randomUUID()
   }).setProtectedHeader({
     alg: "RS256",
     x5c: [env.BUSINESS_CERT],
-    kid: env.CLIENT_ID
+    typ: "JWT"
   }).sign(privateKey);
   return jwt;
 }
