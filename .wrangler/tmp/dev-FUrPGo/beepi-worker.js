@@ -1,7 +1,7 @@
 var __defProp = Object.defineProperty;
 var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
 
-// .wrangler/tmp/bundle-0ZILQz/checked-fetch.js
+// .wrangler/tmp/bundle-VljEJe/checked-fetch.js
 var urls = /* @__PURE__ */ new Set();
 function checkURL(request, init) {
   const url = request instanceof URL ? request : new URL(
@@ -1103,18 +1103,15 @@ async function generateJWT(env) {
     throw new Error(`Invalid private key format: ${error.message}`);
   }
   const jwt = await new SignJWT({
-    aud: "https://test.maskinporten.no/",
     scope: "svv:kjoretoy/kjoretoyopplysninger",
-    resource: "https://www.utv.vegvesen.no",
-    consumer_org: "998453240",
     iss: env.CLIENT_ID,
+    aud: "https://test.maskinporten.no/",
     exp: now + 120,
     iat: now,
-    jti: crypto.randomUUID()
+    jti: "jwt-" + crypto.randomUUID(),
+    resource: "https://www.utv.vegvesen.no"
   }).setProtectedHeader({
     alg: "RS256",
-    x5c: [env.BUSINESS_CERT],
-    typ: "JWT",
     kid: env.CLIENT_ID
   }).sign(privateKey);
   return jwt;
@@ -1207,7 +1204,7 @@ var jsonError = /* @__PURE__ */ __name(async (request, env, _ctx, middlewareCtx)
 }, "jsonError");
 var middleware_miniflare3_json_error_default = jsonError;
 
-// .wrangler/tmp/bundle-0ZILQz/middleware-insertion-facade.js
+// .wrangler/tmp/bundle-VljEJe/middleware-insertion-facade.js
 var __INTERNAL_WRANGLER_MIDDLEWARE__ = [
   middleware_ensure_req_body_drained_default,
   middleware_miniflare3_json_error_default
@@ -1239,7 +1236,7 @@ function __facade_invoke__(request, env, ctx, dispatch, finalMiddleware) {
 }
 __name(__facade_invoke__, "__facade_invoke__");
 
-// .wrangler/tmp/bundle-0ZILQz/middleware-loader.entry.ts
+// .wrangler/tmp/bundle-VljEJe/middleware-loader.entry.ts
 var __Facade_ScheduledController__ = class ___Facade_ScheduledController__ {
   constructor(scheduledTime, cron, noRetry) {
     this.scheduledTime = scheduledTime;

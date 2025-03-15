@@ -996,18 +996,15 @@ async function generateJWT(env) {
     throw new Error(`Invalid private key format: ${error.message}`);
   }
   const jwt = await new SignJWT({
-    aud: "https://test.maskinporten.no/",
     scope: "svv:kjoretoy/kjoretoyopplysninger",
-    resource: "https://www.utv.vegvesen.no",
-    consumer_org: "998453240",
     iss: env.CLIENT_ID,
+    aud: "https://test.maskinporten.no/",
     exp: now + 120,
     iat: now,
-    jti: crypto.randomUUID()
+    jti: "jwt-" + crypto.randomUUID(),
+    resource: "https://www.utv.vegvesen.no"
   }).setProtectedHeader({
     alg: "RS256",
-    x5c: [env.BUSINESS_CERT],
-    typ: "JWT",
     kid: env.CLIENT_ID
   }).sign(privateKey);
   return jwt;
