@@ -1,7 +1,7 @@
 var __defProp = Object.defineProperty;
 var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
 
-// .wrangler/tmp/bundle-Gxqd5l/checked-fetch.js
+// .wrangler/tmp/bundle-MQrwI9/checked-fetch.js
 var urls = /* @__PURE__ */ new Set();
 function checkURL(request, init) {
   const url = request instanceof URL ? request : new URL(
@@ -1066,7 +1066,10 @@ var beepi_worker_default = {
         }
       });
     } catch (error) {
-      return new Response(JSON.stringify({ error: error.message }), {
+      return new Response(JSON.stringify({
+        error: error.message,
+        details: error.stack
+      }), {
         status: 500,
         headers: {
           "Content-Type": "application/json",
@@ -1102,39 +1105,50 @@ async function generateJWT(env) {
   } catch (error) {
     throw new Error(`Invalid private key format: ${error.message}`);
   }
+  const certChain = [env.BUSINESS_CERT.trim()];
   const jwt = await new SignJWT({
-    scope: "svv:kjoretoy/kjoretoyopplysninger",
+    scope: env.SCOPE || "svv:kjoretoy/kjoretoyopplysninger",
     iss: env.CLIENT_ID,
-    aud: "https://test.maskinporten.no/",
-    exp: now + 120,
+    aud: env.AUD || "https://test.maskinporten.no/",
+    exp: now + 119,
+    // slightly less than 120 seconds to allow for clock skew
     iat: now,
     jti: "jwt-" + crypto.randomUUID(),
-    resource: "https://www.utv.vegvesen.no"
+    resource: env.RESOURCE || "https://www.utv.vegvesen.no"
   }).setProtectedHeader({
     alg: "RS256",
-    x5c: [env.BUSINESS_CERT]
+    x5c: certChain
   }).sign(privateKey);
   return jwt;
 }
 __name(generateJWT, "generateJWT");
 async function getAccessToken(jwt, env) {
-  const response = await fetch("https://test.maskinporten.no/token", {
+  const tokenUrl = env.TOKEN_URL || "https://test.maskinporten.no/token";
+  const params = new URLSearchParams();
+  params.append("grant_type", "urn:ietf:params:oauth:grant-type:jwt-bearer");
+  params.append("assertion", jwt);
+  const response = await fetch(tokenUrl, {
     method: "POST",
     headers: {
       "Content-Type": "application/x-www-form-urlencoded"
     },
-    body: `grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=${jwt}`
+    body: params.toString()
   });
+  const responseBody = await response.text();
   if (!response.ok) {
-    const error = await response.text();
-    throw new Error(`Token exchange failed: ${error}`);
+    throw new Error(`Token exchange failed: ${responseBody}`);
   }
-  const data = await response.json();
-  return data.access_token;
+  try {
+    const data = JSON.parse(responseBody);
+    return data.access_token;
+  } catch (error) {
+    throw new Error(`Failed to parse token response: ${responseBody}`);
+  }
 }
 __name(getAccessToken, "getAccessToken");
 async function getVehicleData(token, registrationNumber, env) {
-  const response = await fetch("https://akfell-datautlevering-sisdinky.utv.atlas.vegvesen.no/kjoretoyoppslag/bulk/kjennemerke", {
+  const lookupUrl = env.LOOKUP_URL || "https://akfell-datautlevering-sisdinky.utv.atlas.vegvesen.no/kjoretoyoppslag/bulk/kjennemerke";
+  const response = await fetch(lookupUrl, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -1204,7 +1218,7 @@ var jsonError = /* @__PURE__ */ __name(async (request, env, _ctx, middlewareCtx)
 }, "jsonError");
 var middleware_miniflare3_json_error_default = jsonError;
 
-// .wrangler/tmp/bundle-Gxqd5l/middleware-insertion-facade.js
+// .wrangler/tmp/bundle-MQrwI9/middleware-insertion-facade.js
 var __INTERNAL_WRANGLER_MIDDLEWARE__ = [
   middleware_ensure_req_body_drained_default,
   middleware_miniflare3_json_error_default
@@ -1236,7 +1250,7 @@ function __facade_invoke__(request, env, ctx, dispatch, finalMiddleware) {
 }
 __name(__facade_invoke__, "__facade_invoke__");
 
-// .wrangler/tmp/bundle-Gxqd5l/middleware-loader.entry.ts
+// .wrangler/tmp/bundle-MQrwI9/middleware-loader.entry.ts
 var __Facade_ScheduledController__ = class ___Facade_ScheduledController__ {
   constructor(scheduledTime, cron, noRetry) {
     this.scheduledTime = scheduledTime;
