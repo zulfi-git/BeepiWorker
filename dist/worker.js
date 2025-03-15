@@ -1005,7 +1005,8 @@ async function generateJWT(env) {
     jti: "jwt-" + crypto.randomUUID()
   }).setProtectedHeader({
     alg: "RS256",
-    x5c: [env.BUSINESS_CERT]
+    x5c: [env.BUSINESS_CERT],
+    kid: env.CLIENT_ID
   }).sign(privateKey);
   return jwt;
 }
