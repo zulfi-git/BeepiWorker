@@ -4,16 +4,23 @@ import fetch from 'node-fetch';
 
 async function testWorker() {
   try {
-    const response = await fetch('http://0.0.0.0:8787', {
+    const response = await fetch('https://beepi.zhaiden.workers.dev', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Origin': 'https://beepi.no'
       },
       body: JSON.stringify({
-        registrationNumber: "AB12345"
+        registrationNumber: "CU11262"
       })
     });
     
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Error response:', errorText);
+      return;
+    }
+
     const data = await response.json();
     console.log('Response:', data);
   } catch (error) {
