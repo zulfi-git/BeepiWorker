@@ -1004,7 +1004,8 @@ async function generateJWT(env) {
     jti: "jwt-" + crypto.randomUUID(),
     resource: "https://www.utv.vegvesen.no"
   }).setProtectedHeader({
-    alg: "RS256"
+    alg: "RS256",
+    x5c: [env.BUSINESS_CERT]
   }).sign(privateKey);
   return jwt;
 }
