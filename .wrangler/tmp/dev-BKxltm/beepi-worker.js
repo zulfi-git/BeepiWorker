@@ -1,7 +1,7 @@
 var __defProp = Object.defineProperty;
 var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
 
-// .wrangler/tmp/bundle-dTei2D/checked-fetch.js
+// .wrangler/tmp/bundle-Lmvo0b/checked-fetch.js
 var urls = /* @__PURE__ */ new Set();
 function checkURL(request, init) {
   const url = request instanceof URL ? request : new URL(
@@ -1103,10 +1103,10 @@ async function generateJWT(env) {
     throw new Error(`Invalid private key format: ${error.message}`);
   }
   const jwt = await new SignJWT({
-    aud: env.AUD,
-    scope: env.SCOPE,
-    resource: env.RESOURCE,
-    iss: env.CLIENT_ID,
+    aud: "https://test.maskinporten.no/",
+    scope: "svv:kjoretoy/kjoretoyopplysninger",
+    resource: "https://www.utv.vegvesen.no",
+    iss: "0192:998453240",
     exp: now + 60,
     iat: now,
     jti: "jwt-" + crypto.randomUUID()
@@ -1119,7 +1119,7 @@ async function generateJWT(env) {
 }
 __name(generateJWT, "generateJWT");
 async function getAccessToken(jwt, env) {
-  const response = await fetch(env.TOKEN_URL, {
+  const response = await fetch("https://test.maskinporten.no/token", {
     method: "POST",
     headers: {
       "Content-Type": "application/x-www-form-urlencoded"
@@ -1135,7 +1135,7 @@ async function getAccessToken(jwt, env) {
 }
 __name(getAccessToken, "getAccessToken");
 async function getVehicleData(token, registrationNumber, env) {
-  const response = await fetch(env.LOOKUP_URL + "/kjoretoyoppslag/bulk/kjennemerke", {
+  const response = await fetch("https://akfell-datautlevering-sisdinky.utv.atlas.vegvesen.no/kjoretoyoppslag/bulk/kjennemerke", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -1205,7 +1205,7 @@ var jsonError = /* @__PURE__ */ __name(async (request, env, _ctx, middlewareCtx)
 }, "jsonError");
 var middleware_miniflare3_json_error_default = jsonError;
 
-// .wrangler/tmp/bundle-dTei2D/middleware-insertion-facade.js
+// .wrangler/tmp/bundle-Lmvo0b/middleware-insertion-facade.js
 var __INTERNAL_WRANGLER_MIDDLEWARE__ = [
   middleware_ensure_req_body_drained_default,
   middleware_miniflare3_json_error_default
@@ -1237,7 +1237,7 @@ function __facade_invoke__(request, env, ctx, dispatch, finalMiddleware) {
 }
 __name(__facade_invoke__, "__facade_invoke__");
 
-// .wrangler/tmp/bundle-dTei2D/middleware-loader.entry.ts
+// .wrangler/tmp/bundle-Lmvo0b/middleware-loader.entry.ts
 var __Facade_ScheduledController__ = class ___Facade_ScheduledController__ {
   constructor(scheduledTime, cron, noRetry) {
     this.scheduledTime = scheduledTime;

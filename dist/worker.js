@@ -996,10 +996,10 @@ async function generateJWT(env) {
     throw new Error(`Invalid private key format: ${error.message}`);
   }
   const jwt = await new SignJWT({
-    aud: env.AUD,
-    scope: env.SCOPE,
-    resource: env.RESOURCE,
-    iss: env.CLIENT_ID,
+    aud: "https://test.maskinporten.no/",
+    scope: "svv:kjoretoy/kjoretoyopplysninger",
+    resource: "https://www.utv.vegvesen.no",
+    iss: "0192:998453240",
     exp: now + 60,
     iat: now,
     jti: "jwt-" + crypto.randomUUID()
@@ -1011,7 +1011,7 @@ async function generateJWT(env) {
   return jwt;
 }
 async function getAccessToken(jwt, env) {
-  const response = await fetch(env.TOKEN_URL, {
+  const response = await fetch("https://test.maskinporten.no/token", {
     method: "POST",
     headers: {
       "Content-Type": "application/x-www-form-urlencoded"
@@ -1026,7 +1026,7 @@ async function getAccessToken(jwt, env) {
   return data.access_token;
 }
 async function getVehicleData(token, registrationNumber, env) {
-  const response = await fetch(env.LOOKUP_URL + "/kjoretoyoppslag/bulk/kjennemerke", {
+  const response = await fetch("https://akfell-datautlevering-sisdinky.utv.atlas.vegvesen.no/kjoretoyoppslag/bulk/kjennemerke", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
