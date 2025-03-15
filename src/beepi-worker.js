@@ -79,9 +79,6 @@ async function generateJWT(env) {
   } catch (error) {
     throw new Error(`Invalid private key format: ${error.message}`);
   }
-
-  // Properly format the certificate for x5c
-  const certChain = [env.BUSINESS_CERT.trim()];
   
   // Build JWT payload
   const jwt = await new SignJWT({
@@ -94,8 +91,7 @@ async function generateJWT(env) {
     resource: env.RESOURCE || "https://www.utv.vegvesen.no"
   })
   .setProtectedHeader({ 
-    alg: "RS256",
-    x5c: certChain
+    alg: "RS256"
   })
   .sign(privateKey);
 
