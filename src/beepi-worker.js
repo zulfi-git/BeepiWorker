@@ -89,8 +89,7 @@ async function generateJWT(env) {
     resource: "https://www.utv.vegvesen.no"
   })
   .setProtectedHeader({ 
-    alg: "RS256",
-    kid: env.CLIENT_ID
+    alg: "RS256"
   })
   .sign(privateKey);
 
