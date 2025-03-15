@@ -998,7 +998,6 @@ async function generateJWT(env) {
   } catch (error) {
     throw new Error(`Invalid private key format: ${error.message}`);
   }
-  const certChain = [env.BUSINESS_CERT.trim()];
   const jwt = await new SignJWT({
     scope: env.SCOPE || "svv:kjoretoy/kjoretoyopplysninger",
     iss: env.CLIENT_ID,
@@ -1009,8 +1008,7 @@ async function generateJWT(env) {
     jti: "jwt-" + crypto.randomUUID(),
     resource: env.RESOURCE || "https://www.utv.vegvesen.no"
   }).setProtectedHeader({
-    alg: "RS256",
-    x5c: certChain
+    alg: "RS256"
   }).sign(privateKey);
   return jwt;
 }
