@@ -1,48 +1,121 @@
-
-// Import libraries for JWT generation
 import { SignJWT } from 'jose';
+
+// Simple in-memory cache and rate limit store
+const CACHE_TTL = 300000; // 5 minutes in ms
+const RATE_LIMIT = 10; // requests per minute
+const cache = new Map();
+const rateLimiter = new Map();
 
 export default {
   async fetch(request, env, ctx) {
-    // Handle CORS
     if (request.method === "OPTIONS") {
       return handleCORS();
     }
 
     try {
-      // Get registration number from request
+      // Rate limiting
+      const ip = request.headers.get('cf-connecting-ip') || 'unknown';
+      if (isRateLimited(ip)) {
+        return new Response(JSON.stringify({ 
+          error: 'Rate limit exceeded. Please try again later.' 
+        }), {
+          status: 429,
+          headers: corsHeaders()
+        });
+      }
+
       const { registrationNumber } = await request.json();
 
-      // Generate JWT
+      // Input validation
+      if (!isValidRegistrationNumber(registrationNumber)) {
+        return new Response(JSON.stringify({ 
+          error: 'Invalid registration number format' 
+        }), {
+          status: 400,
+          headers: corsHeaders()
+        });
+      }
+
+      // Check cache
+      const cachedData = getCache(registrationNumber);
+      if (cachedData) {
+        return new Response(JSON.stringify(cachedData), {
+          headers: corsHeaders()
+        });
+      }
+
       const jwt = await generateJWT(env);
-
-      // Exchange JWT for access token
       const accessToken = await getAccessToken(jwt, env);
-
-      // Call Vegvesen API
       const vehicleData = await getVehicleData(accessToken, registrationNumber, env);
 
-      // Return data to WordPress
+      // Cache the response
+      setCache(registrationNumber, vehicleData);
+
       return new Response(JSON.stringify(vehicleData), {
-        headers: {
-          "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "https://beepi.no"
-        }
+        headers: corsHeaders()
       });
     } catch (error) {
+      const status = error.name === 'ValidationError' ? 400 : 500;
       return new Response(JSON.stringify({ 
         error: error.message,
-        details: error.stack 
+        code: error.name
       }), {
-        status: 500,
-        headers: {
-          "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "https://beepi.no"
-        }
+        status,
+        headers: corsHeaders()
       });
     }
   }
 };
+
+function corsHeaders() {
+  return {
+    "Content-Type": "application/json",
+    "Access-Control-Allow-Origin": "https://beepi.no"
+  };
+}
+
+function handleCORS() {
+  return new Response(null, {
+    headers: {
+      "Access-Control-Allow-Origin": "https://beepi.no",
+      "Access-Control-Allow-Methods": "POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type",
+      "Access-Control-Max-Age": "86400"
+    }
+  });
+}
+
+function isValidRegistrationNumber(reg) {
+  return /^[A-Z]{2}[0-9]{4,5}$/.test(reg.replace(/\s/g, ''));
+}
+
+function isRateLimited(ip) {
+  const now = Date.now();
+  const minute = Math.floor(now / 60000);
+  const key = `${ip}:${minute}`;
+
+  const count = rateLimiter.get(key) || 0;
+  if (count >= RATE_LIMIT) return true;
+
+  rateLimiter.set(key, count + 1);
+  return false;
+}
+
+function getCache(key) {
+  const item = cache.get(key);
+  if (item && Date.now() - item.timestamp < CACHE_TTL) {
+    return item.data;
+  }
+  cache.delete(key);
+  return null;
+}
+
+function setCache(key, data) {
+  cache.set(key, {
+    timestamp: Date.now(),
+    data
+  });
+}
 
 async function generateJWT(env) {
   const now = Math.floor(Date.now() / 1000);
@@ -150,15 +223,4 @@ async function getVehicleData(token, registrationNumber, env) {
   }
 
   return response.json();
-}
-
-function handleCORS() {
-  return new Response(null, {
-    headers: {
-      "Access-Control-Allow-Origin": "https://beepi.no",
-      "Access-Control-Allow-Methods": "POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type",
-      "Access-Control-Max-Age": "86400"
-    }
-  });
 }
