@@ -75,6 +75,15 @@ export default {
 };
 
 function corsHeaders(request) {
+  if (!request) {
+    return {
+      "Content-Type": "application/json",
+      "Access-Control-Allow-Origin": "https://beepi.no",
+      "Access-Control-Allow-Methods": "POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Origin"
+    };
+  }
+  
   const origin = request.headers.get('Origin');
   if (!origin) return null;
   
