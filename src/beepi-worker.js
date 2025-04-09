@@ -1,7 +1,7 @@
 import { SignJWT } from 'jose';
 
 // Simple in-memory cache and rate limit store
-const CACHE_TTL = 300000; // 5 minutes in ms
+const CACHE_TTL = 86400000; // 24 hours in ms
 const RATE_LIMIT = 10; // requests per minute
 const cache = new Map();
 const rateLimiter = new Map();
