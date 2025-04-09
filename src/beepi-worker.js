@@ -76,16 +76,22 @@ export default {
 
 function corsHeaders(request) {
   const origin = request.headers.get('Origin');
-  // Allow beepi.no and its subdomains
-  if (!origin || (!origin.endsWith('beepi.no') && origin !== 'https://beepi.no')) {
+  if (!origin) return null;
+  
+  try {
+    const url = new URL(origin);
+    if (!url.hostname.endsWith('beepi.no')) {
+      return null;
+    }
+    return {
+      "Content-Type": "application/json",
+      "Access-Control-Allow-Origin": origin,
+      "Access-Control-Allow-Methods": "POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Origin"
+    };
+  } catch {
     return null;
   }
-  return {
-    "Content-Type": "application/json",
-    "Access-Control-Allow-Origin": origin,
-    "Access-Control-Allow-Methods": "POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type, Origin"
-  };
 }
 
 function validateRequest(request) {
