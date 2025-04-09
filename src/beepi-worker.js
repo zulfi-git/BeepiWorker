@@ -76,10 +76,12 @@ export default {
 
 function corsHeaders(request) {
   const origin = request.headers.get('Origin');
-  // Allow all origins during development
+  if (!origin || !origin.endsWith('beepi.no')) {
+    return null;
+  }
   return {
     "Content-Type": "application/json",
-    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Origin": origin,
     "Access-Control-Allow-Methods": "POST, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type"
   };
