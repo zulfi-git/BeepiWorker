@@ -103,16 +103,10 @@ function corsHeaders(request) {
   }
 }
 
+// Origin validation is now handled in corsHeaders
 function validateRequest(request) {
-  const origin = request.headers.get('Origin');
-  const referer = request.headers.get('Referer');
-  
-  if (!origin || origin !== 'https://beepi.no') {
+  if (!corsHeaders(request)) {
     throw new Error('Invalid origin');
-  }
-  
-  if (!referer || !referer.startsWith('https://beepi.no/')) {
-    throw new Error('Invalid referer');
   }
 }
 
