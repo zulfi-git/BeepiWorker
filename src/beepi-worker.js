@@ -76,14 +76,15 @@ export default {
 
 function corsHeaders(request) {
   const origin = request.headers.get('Origin');
-  if (!origin || !origin.endsWith('beepi.no')) {
+  // Allow beepi.no and its subdomains
+  if (!origin || (!origin.endsWith('beepi.no') && origin !== 'https://beepi.no')) {
     return null;
   }
   return {
     "Content-Type": "application/json",
     "Access-Control-Allow-Origin": origin,
     "Access-Control-Allow-Methods": "POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type"
+    "Access-Control-Allow-Headers": "Content-Type, Origin"
   };
 }
 
