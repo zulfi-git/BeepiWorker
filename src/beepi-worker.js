@@ -110,7 +110,26 @@ function getCache(key) {
   return null;
 }
 
+const MAX_CACHE_SIZE = 1000; // Maximum number of entries
+
 function setCache(key, data) {
+  // Clean old entries if cache is too large
+  if (cache.size >= MAX_CACHE_SIZE) {
+    const now = Date.now();
+    // Delete oldest entries and expired entries
+    for (const [k, v] of cache.entries()) {
+      if (now - v.timestamp > CACHE_TTL) {
+        cache.delete(k);
+      }
+    }
+    // If still too large, delete oldest entries
+    if (cache.size >= MAX_CACHE_SIZE) {
+      const oldest = [...cache.entries()]
+        .sort((a, b) => a[1].timestamp - b[1].timestamp)[0];
+      cache.delete(oldest[0]);
+    }
+  }
+  
   cache.set(key, {
     timestamp: Date.now(),
     data
