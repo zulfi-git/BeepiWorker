@@ -19,8 +19,7 @@ export default {
 
     try {
       validateRequest(request);
-
-    try {
+      
       // Rate limiting
       const ip = request.headers.get('cf-connecting-ip') || 'unknown';
       if (isRateLimited(ip)) {
@@ -248,11 +247,47 @@ async function getAccessToken(jwt, env) {
   }
 }
 
+async function fetchWithRetry(url, options, maxRetries = 3, timeout = 5000) {
+  let lastError;
+  
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeout);
+      
+      const response = await fetch(url, {
+        ...options,
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
+      
+      if (response.ok) {
+        return response;
+      }
+      
+      lastError = await response.text();
+    } catch (error) {
+      lastError = error;
+      if (error.name === 'AbortError') {
+        lastError = new Error('Request timeout');
+      }
+    }
+    
+    // Wait before retry using exponential backoff
+    if (attempt < maxRetries - 1) {
+      await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
+    }
+  }
+  
+  throw new Error(`Request failed after ${maxRetries} attempts: ${lastError}`);
+}
+
 async function getVehicleData(token, registrationNumber, env) {
   const lookupUrl = env.LOOKUP_URL || 
     "https://akfell-datautlevering-sisdinky.utv.atlas.vegvesen.no/kjoretoyoppslag/bulk/kjennemerke";
   
-  const response = await fetch(lookupUrl, {
+  const response = await fetchWithRetry(lookupUrl, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -262,11 +297,6 @@ async function getVehicleData(token, registrationNumber, env) {
       { kjennemerke: registrationNumber }
     ])
   });
-
-  if (!response.ok) {
-    const error = await response.text();
-    throw new Error(`Vehicle lookup failed: ${error}`);
-  }
 
   return response.json();
 }
