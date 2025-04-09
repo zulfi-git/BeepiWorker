@@ -8,9 +8,17 @@ const rateLimiter = new Map();
 
 export default {
   async fetch(request, env, ctx) {
-    if (request.method === "OPTIONS") {
-      return handleCORS();
+    const headers = corsHeaders(request);
+    if (!headers) {
+      return new Response('Forbidden', { status: 403 });
     }
+
+    if (request.method === "OPTIONS") {
+      return new Response(null, { headers });
+    }
+
+    try {
+      validateRequest(request);
 
     try {
       // Rate limiting
@@ -67,11 +75,30 @@ export default {
   }
 };
 
-function corsHeaders() {
+function corsHeaders(request) {
+  const origin = request.headers.get('Origin');
+  if (origin !== 'https://beepi.no') {
+    return null;
+  }
   return {
     "Content-Type": "application/json",
-    "Access-Control-Allow-Origin": "https://beepi.no"
+    "Access-Control-Allow-Origin": "https://beepi.no",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type"
   };
+}
+
+function validateRequest(request) {
+  const origin = request.headers.get('Origin');
+  const referer = request.headers.get('Referer');
+  
+  if (!origin || origin !== 'https://beepi.no') {
+    throw new Error('Invalid origin');
+  }
+  
+  if (!referer || !referer.startsWith('https://beepi.no/')) {
+    throw new Error('Invalid referer');
+  }
 }
 
 function handleCORS() {
