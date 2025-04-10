@@ -1,5 +1,5 @@
 
-name = "beepi"
+name = "beepi-svv"
 main = "src/beepi-worker.js"
 compatibility_date = "2024-03-07"
 
